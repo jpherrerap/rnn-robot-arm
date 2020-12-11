@@ -1,10 +1,15 @@
+
+#define SERIAL_DEBUG true
+
 #include <Stepper.h>
 
 #define ZERO_RANGE 20
 
-Stepper motor_b(200, 2, 4, 3, 5);
-Stepper motor_v(200, 6, 8, 7, 9);
-Stepper motor_h(200, 10, 12, 11, 13);
+#define PPR 200
+
+Stepper motor_b(PPR, 2, 3, 4, 5);
+Stepper motor_v(PPR, 6, 8, 7, 9);
+Stepper motor_h(PPR, 10, 12, 11, 13);
 
 int RPM[3] = {0, 0, 0};
 
