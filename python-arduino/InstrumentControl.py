@@ -31,59 +31,16 @@ class StepperMotor:
         self.StepperMotor.close()
         print( "StepperMotor: Serial Communication Closed"  )
         return
-    def SetPosition(self,num,degsPerStepFloat,stepsFloat):
-       steps = int(stepsFloat / degsPerStepFloat)
-       if(steps < 65535 and steps > -1):
-               binary = DecimalToBinary(steps)
-               numBytes = BinaryCount(binary)
-               self.StepperMotor.write(bytes(chr(255), encoding='utf8'))
-               #Note: The 2 in (0,2,1) allows for the transmission of two bytes.
-               for i in range(0,2,1):
-                       sBinary = str(binary)
-                       firstByte = int(sBinary,2) & int('11111111',2)
-                       newBinary = int(sBinary,2) >> 8
-                       binary = DecimalToBinary(newBinary)
-                       self.StepperMotor.write(bytes(chr(firstByte), encoding='utf8'))
-       if(steps > -65535 and steps < 0):
-               stepsNeg = steps * -1
-               binary = DecimalToBinary(stepsNeg)
-               numBytes = BinaryCount(binary)
-               self.StepperMotor.write(bytes(chr(220), encoding='utf8'))
-               #Note: The 2 in (0,2,1) allows for the transmission of two bytes.
-               for i in range(0,2,1):
-                       sBinary = str(binary)
-                       firstByte = int(sBinary,2) & int('11111111',2)
-                       newBinary = int(sBinary,2) >> 8
-                       binary = DecimalToBinary(newBinary)
-                       self.StepperMotor.write(bytes(chr(firstByte)), encoding='utf8')
-       time.sleep(1)
-       return stepsFloat
     def GetPosition(self):
         self.StepperMotor.write(bytes(chr(5)+chr(0)+chr(0), encoding='utf8'))
         time.sleep(1)
         StepperPosition=self.StepperMotor.readline().decode("utf-8")
         return StepperPosition
-    def GetVersion(self):
-        self.StepperMotor.write(bytes(chr(118)+chr(0)+chr(0), encoding='utf8'))
-        time.sleep(1)
-        FirmwareVersion=self.StepperMotor.readline().decode("utf-8")
-        return FirmwareVersion
 
-#Convert integer n (base 10) to a binary string (base 2)
-def DecimalToBinary(n):
-   if n < 0: raise ValueError("must be a positive integer")
-   BinaryString=bin(n)[2:]
-   return BinaryString
+    def Girar(self, motor, a):
+            self.StepperMotor.write(bytes(chr(120), encoding='utf8'))
+            self.StepperMotor.write(bytes(chr(motor), encoding='utf8'))
+            self.StepperMotor.write(bytes(chr(abs(a)), encoding='utf8'))
+            self.StepperMotor.write(bytes(chr(abs(a)//a + 120), encoding='utf8'))
 
-#Returns the number of bit bytes (eighths) in binary string. Rounds up.
-def BinaryCount(number):
-    sNumber = str(number)
-    length = len(sNumber)
-    numBytes = length / 8.0
-    numBytesInt = length / 8
-    if numBytes > numBytesInt:
-        return numBytesInt + 1
-    else:
-        return numBytesInt
 
-# End of InstrumentControl.py

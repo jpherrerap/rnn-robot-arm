@@ -2,100 +2,71 @@
 //2012-04-14 jdreyer
 //Stepper motor control program
 //Arduino will respond to ENQ character with the motor position 
-//#define STEPPER_PIN_1 2
-//#define STEPPER_PIN_2 3
-//#define STEPPER_PIN_3 4
-//#define STEPPER_PIN_4 5
-
-int STEPPER_PIN_1=2;
-int STEPPER_PIN_2=3;
-int STEPPER_PIN_3=4;
-int STEPPER_PIN_4=5;
 int stepsToMoveNeg;
 int StartByte;
 int i;
 int userInput[3];
-int digitalVal;
-int dir;
+int a;
 int steps;
-int previous=0;
-int val;
 char direction;
-int negVal;
-int StepperPosition=0;
-int byte1;
-int byte2;
-float Version=5.0;
 
-int DirectionPin=8;
+int StepperPosition=0;
+int mot;
+int motornum;
+int motor1[4]={2, 3, 4, 5};
+int motor2[4]={6, 7, 8, 9};
+int motor3[4]={10, 11, 12, 13};
+int* motors[3]={motor1, motor2, motor3};
+int sgn;
+
 int StepPin=12;
 
 void setup() {
    Serial.begin(115200);
    pinMode(13, OUTPUT); 
-   pinMode(DirectionPin, OUTPUT);
    pinMode(StepPin, OUTPUT);
-   pinMode(STEPPER_PIN_1, OUTPUT);
-   pinMode(STEPPER_PIN_2, OUTPUT);
-   pinMode(STEPPER_PIN_3, OUTPUT);
-   pinMode(STEPPER_PIN_4, OUTPUT);
+   pinMode(motor1[0], OUTPUT);
+   pinMode(motor1[1], OUTPUT);
+   pinMode(motor1[2], OUTPUT);
+   pinMode(motor1[3], OUTPUT);
+  
+   pinMode(motor2[0], OUTPUT);
+   pinMode(motor2[1], OUTPUT);
+   pinMode(motor2[2], OUTPUT);
+   pinMode(motor2[3], OUTPUT);
+  
+   pinMode(motor3[0], OUTPUT);
+   pinMode(motor3[1], OUTPUT);
+   pinMode(motor3[2], OUTPUT);
+   pinMode(motor3[3], OUTPUT);
 }
 
 void loop()
 {
   if (Serial.available() > 2) {
     StartByte = Serial.read();
-    if (StartByte == 255) {
-      for (i=0;i<2;i++) {
-        userInput[i] = Serial.read();
-      }
-      byte1 = userInput[0];
-      byte2 = userInput[1];
-      val = (byte2<<8) | byte1;
-      int stepsToMove = val-previous;
-      
-      if (stepsToMove > 0){
-        //Move Forward 
-        TurnMotorClockWise(stepsToMove);
-      }
-      if (stepsToMove < 0){
-        TurnMotorCounterClockWise(stepsToMove*-1);
-      }
-      previous = val;
-    }
-    
-    if (StartByte == 220) {
-      for (i=0;i<2;i++) {
-        userInput[i] = Serial.read();
-      }
-      byte1 = userInput[0];
-      byte2 = userInput[1];
-      val = (byte2<<8) | byte1;
-      negVal = val * -1;
-      int stepsToMove = negVal-previous;
-      
-      if (stepsToMove > 0){
-        TurnMotorClockWise(stepsToMove);
-      }
-      if (stepsToMove < 0){
-        TurnMotorCounterClockWise(stepsToMove*-1);
-      }
-      previous = negVal;
-    }
-
     if (StartByte == 5) {
       Serial.print(StepperPosition);
     }
-    
-    if (StartByte == 118) {
-      Serial.print(Version);
-    }
-    if (StartByte == 120) { // Esta parte es para hacer pruebas
+
+    if (StartByte == 120) {
       userInput[0] = Serial.read();
       userInput[1] = Serial.read();
-      Serial.print(userInput[0]);
-      Serial.print(userInput[1]);
-      //TurnMotorCounterClockWise(100);
+      userInput[2] = Serial.read();
+      sgn=userInput[2];
+      motornum=userInput[0]-120;
+      a=userInput[1];
+      MotorOff( motors[(motornum+1) % 3]);
+      MotorOff( motors[(motornum+2) % 3]);
+      Serial.print(sgn);
+      if (StartByte==119) { // Signo negativo
+        TurnMotorCounterClockWise(a, motors[motornum]);
+        MotorOff( motors[motornum] );
+      }
+      if (StartByte == 121) { // Signo positivo
+        TurnMotorClockWise(a, motors[motornum]);
+        MotorOff( motors[motornum] );
+      }
     }
   }
 }
@@ -108,65 +79,73 @@ void FlashLED(int time)
   delay(10);              
 }
 
-void TurnMotorClockWise(int steps)
+void TurnMotorClockWise(int steps, int motor[])
 {
   // Iterate for [steps] microsteps
   for (i = 0; i<steps; i++)       
   {
-  digitalWrite(STEPPER_PIN_1, HIGH);
-  digitalWrite(STEPPER_PIN_2, LOW);
-  digitalWrite(STEPPER_PIN_3, LOW);
-  digitalWrite(STEPPER_PIN_4, LOW);
+  digitalWrite(motor[0], HIGH);
+  digitalWrite(motor[1], LOW);
+  digitalWrite(motor[2], LOW);
+  digitalWrite(motor[3], LOW);
   delay(2);
 
-  digitalWrite(STEPPER_PIN_1, LOW);
-  digitalWrite(STEPPER_PIN_2, HIGH);
-  digitalWrite(STEPPER_PIN_3, LOW);
-  digitalWrite(STEPPER_PIN_4, LOW);
+  digitalWrite(motor[0], LOW);
+  digitalWrite(motor[1], HIGH);
+  digitalWrite(motor[2], LOW);
+  digitalWrite(motor[3], LOW);
   delay(2);
 
-  digitalWrite(STEPPER_PIN_1, LOW);
-  digitalWrite(STEPPER_PIN_2, LOW);
-  digitalWrite(STEPPER_PIN_3, HIGH);
-  digitalWrite(STEPPER_PIN_4, LOW);
+  digitalWrite(motor[0], LOW);
+  digitalWrite(motor[1], LOW);
+  digitalWrite(motor[2], HIGH);
+  digitalWrite(motor[3], LOW);
   delay(2);
 
-  digitalWrite(STEPPER_PIN_1, LOW);
-  digitalWrite(STEPPER_PIN_2, LOW);
-  digitalWrite(STEPPER_PIN_3, LOW);
-  digitalWrite(STEPPER_PIN_4, HIGH);
+  digitalWrite(motor[0], LOW);
+  digitalWrite(motor[1], LOW);
+  digitalWrite(motor[2], LOW);
+  digitalWrite(motor[3], HIGH);
   delay(2);
   }
   StepperPosition=StepperPosition+steps;
 }
 
-void TurnMotorCounterClockWise(int steps)
+void TurnMotorCounterClockWise(int steps, int motor[])
 {
   for (i = 0; i<steps; i++)       
   {
-  digitalWrite(STEPPER_PIN_1, LOW);
-  digitalWrite(STEPPER_PIN_2, LOW);
-  digitalWrite(STEPPER_PIN_3, LOW);
-  digitalWrite(STEPPER_PIN_4, HIGH);
+  digitalWrite(motor[0], LOW);
+  digitalWrite(motor[1], LOW);
+  digitalWrite(motor[2], LOW);
+  digitalWrite(motor[3], HIGH);
   delay(2);
   
-  digitalWrite(STEPPER_PIN_1, LOW);
-  digitalWrite(STEPPER_PIN_2, LOW);
-  digitalWrite(STEPPER_PIN_3, HIGH);
-  digitalWrite(STEPPER_PIN_4, LOW);
+  digitalWrite(motor[0], LOW);
+  digitalWrite(motor[1], LOW);
+  digitalWrite(motor[2], HIGH);
+  digitalWrite(motor[3], LOW);
   delay(2);
   
-  digitalWrite(STEPPER_PIN_1, LOW);
-  digitalWrite(STEPPER_PIN_2, HIGH);
-  digitalWrite(STEPPER_PIN_3, LOW);
-  digitalWrite(STEPPER_PIN_4, LOW);
+  digitalWrite(motor[0], LOW);
+  digitalWrite(motor[1], HIGH);
+  digitalWrite(motor[2], LOW);
+  digitalWrite(motor[3], LOW);
   delay(2);
   
-  digitalWrite(STEPPER_PIN_1, HIGH);
-  digitalWrite(STEPPER_PIN_2, LOW);
-  digitalWrite(STEPPER_PIN_3, LOW);
-  digitalWrite(STEPPER_PIN_4, LOW);
+  digitalWrite(motor[0], HIGH);
+  digitalWrite(motor[1], LOW);
+  digitalWrite(motor[2], LOW);
+  digitalWrite(motor[3], LOW);
   delay(2);
   }
   StepperPosition=StepperPosition-steps;
+}
+
+void MotorOff(int motor[])
+{
+  digitalWrite(motor[0], LOW);
+  digitalWrite(motor[1], LOW);
+  digitalWrite(motor[2], LOW);
+  digitalWrite(motor[3], LOW);
 }
