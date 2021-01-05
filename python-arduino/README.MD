@@ -1,16 +1,7 @@
 # Uso
-Una vez cargado ArduinoStepperControl.ino al Arduino,
-
-import InstrumentControl
-
-Loading InstrumentControl v1.2
-
-#Change 'COM5' to the Arduino COM port.
-
-Stepper=InstrumentControl.StepperMotor('COM5')
-
-StepperMotor: Serial Communication Open
-
-#Hacer girar el motor 1 en 100 pasos
-
-Stepper.Girar(120, 100)
+Una vez cargado MOV_.ino al Arduino,
+Cambiar en serial_write_read.py la linea
+      arduino = serial.Serial('COM3', 9600)
+y reemplazar 'COM3' con el puerto del Arduino
+Abrir serial_write_read.py y establecer los ángulos del motor con
+      angulos(th1, th1, th3)
