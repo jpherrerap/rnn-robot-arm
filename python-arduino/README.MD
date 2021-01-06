@@ -7,6 +7,6 @@ Cambiar en serial_write_read.py la linea
       
 y reemplazar 'COM3' con el puerto del Arduino
 
-Abrir serial_write_read.py y establecer los ángulos del motor con
+Ejecutar serial_write_read.py y establecer los ángulos del motor con
 
       angulos(th1, th1, th3)
